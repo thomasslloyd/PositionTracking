@@ -1,10 +1,15 @@
 //Author: Thomas Lloyd
 
 #include <Arduino_LSM9DS1.h>
+#include <MadgwickAHRS.h>
+#include <Wire.h>
+
+Madgwick filter;
 
 float samplecount = 0;
 float time1;
 float time2;
+float setuptime;
 
 void setup() {
   Serial.begin(9600);
@@ -15,6 +20,8 @@ void setup() {
     Serial.println("Failed to initialize IMU!");
     while (1);
   }
+
+  filter.begin(100);
 
   Serial.print("Accelerometer sample rate = ");
   Serial.print(IMU.accelerationSampleRate());
@@ -40,24 +47,46 @@ void setup() {
 
 }
 
-
 void loop() {
-  float x, y, z;
-  float roll_dot, pitch_dot, yaw_dot;
-  float roll, pitch, yaw;
-
+  float ax, ay, az;
+  float gx, gy, gz;
+  float mx, my, mz;
+  float roll, pitch, heading;
+  
   if (IMU.accelerationAvailable()) {
     
-    IMU.readAcceleration(x, y, z);
-    IMU.readGyroscope(roll_dot, pitch_dot, yaw_dot);
-    IMU.readMagneticField(roll, pitch, yaw);
+    IMU.readAcceleration(ax, ay, az);
+    IMU.readGyroscope(gx, gy, gz);
+    IMU.readMagneticField(mx, my, mz);
+    Serial.println("sensors successfully read...");
+
+     // Update the Madgwick filter
+    filter.updateIMU(gx, gy, gz, ax, ay, az);
+    //filter.update(gx, gy, gz, ax, ay, az, mx, my, mz);
+
+    
     if (samplecount == 0){
       time1 = 0;
       time2 = 0;
       roll = 0;
+      setuptime = millis();
+      Serial.print('\n');
+      Serial.print("time1: ");
+      Serial.println(time1);
+      Serial.print("time2: ");
+      Serial.print(time2);
+      Serial.print('\n');
+      
+    }
+    else if (samplecount == 1){
+      time2 = millis() - setuptime;
+      //Serial.print("time1: ");
+      //Serial.println(time1);
+      //Serial.print("time2: ");
+      //Serial.println(time2);
     }
     else {
-      time2 = millis() - time2;
+      time2 = millis()-time2;
     }
 //    Accelerometer range is set at [-4,+4]g -/+0.122 mg
 //    Gyroscope range is set at [-2000, +2000] dps +/-70 mdps
@@ -66,49 +95,31 @@ void loop() {
 //    Gyroscope Output data rate is fixed at 104 Hz
 //    Magnetometer Output data rate is fixed at 20 Hz
 
-    Serial.print("x,y,z: ");
-    Serial.print(x);
-    Serial.print('\t');
-    Serial.print(y);
-    Serial.print('\t');
-    Serial.print(z);
+//
+//    roll = (time2*roll_dot)-(time1*roll_dot)+roll;
+//    pitch = (time2*pitch_dot)-(time1*pitch_dot)+pitch;
+//    yaw = (time2*yaw_dot)-(time1*yaw_dot)+yaw;
+
+
+    roll = filter.getRoll();
+    pitch = filter.getPitch();
+    heading = filter.getYaw(); 
 
     Serial.print('\t');
     Serial.print('\t');
-    Serial.print("roll_dot, pitch_dot, yaw_dot: ");
-    Serial.print(roll_dot);
-    Serial.print('\t');
-    Serial.print(pitch_dot);
-    Serial.print('\t');
-    Serial.print(yaw_dot);
-
-    roll = (time2*roll_dot)+roll;
-    pitch = (time2*roll_dot)+roll;
-    yaw = (time2*roll_dot)+roll;
-
-    time1 = time2;
-    samplecount++;
-
-    Serial.print('\t');
-    Serial.print('\t');
-    Serial.print("roll, pitch, yaw: ");
+    Serial.print("roll, pitch, heading: ");
     Serial.print(roll);
     Serial.print('\t');
     Serial.print(pitch);
     Serial.print('\t');
-    Serial.print(yaw);
-    
-
-//    Serial.print('\t');
-//    Serial.print('\t');
-//    Serial.print("roll, pitch, yaw: ");
-//    Serial.print(mag_x);
-//    Serial.print('\t');
-//    Serial.print(maf_y);
-//    Serial.print('\t');
-//    Serial.print(mag_z);
-
+    Serial.print(heading);
     Serial.println();
+
+    String data = String(roll) + "," + String(pitch) + "," +  String(heading);
     
+    Serial.println(data);    
+    
+    time1 = time2;
+    samplecount++;
   }
 }

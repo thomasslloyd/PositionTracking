@@ -4,7 +4,7 @@ String val;     // Data received from the serial port
 
 
 void setup()  {
-  String portName = Serial.list()[0];
+  String portName = Serial.list()[8];
   myPort = new Serial(this, portName, 9600);
   
   size(1280, 720, P3D);
@@ -32,9 +32,11 @@ void draw()  {
       println(inBuffer);
       
       //str.substring(beginIndex, endIndex)
-      String roll_str = inBuffer.substring(0, 2);
-      String pitch_str = inBuffer.substring(3, 4);
-      String yaw_str = inBuffer.substring(5, 6);
+      //Orientation: 239.26 -17.40 -112.52
+      //012345678910              
+      String roll_str = inBuffer.substring(12, 18);
+      String pitch_str = inBuffer.substring(19, 26);
+      String yaw_str = inBuffer.substring(27, 34);
       
       int roll = Integer.parseInt(roll_str);
       int pitch = Integer.parseInt(pitch_str);
