@@ -47,11 +47,76 @@ void setup() {
 
 }
 
+void index_helper(int roll, int pitch, int heading) {
+  
+  String roll_str = String(roll);
+  String pitch_str = String(pitch);
+  String heading_str = String(heading);
+
+  int roll_sign;
+  int pitch_sign;
+  int heading_sign;
+
+  //sign
+  //value part one
+  
+//-----------------------------------------
+//ROLL
+  if (roll > 0) {
+    roll_sign = 0x01; //positive value
+  }
+  else {
+    roll_sign = 0x00; //negative value
+  }
+  uint8_t roll_send = abs(roll); //removing sign and making one byte
+  
+//-----------------------------------------
+//PITCH
+  if (pitch > 0) {
+    pitch_sign = 0x01; //positive value
+  }
+  else {
+    pitch_sign = 0x00; //negative value
+  }
+  uint8_t pitch_send = abs(pitch); //removing sign and making one byte
+//-----------------------------------------
+//HEADING
+  if (roll > 0) {
+    heading_sign = 0x01; //positive value
+  }
+  else {
+    heading_sign = 0x00; //negative value
+  }
+  uint8_t heading_send = abs(heading); //removing sign and making one byte
+
+//-----------------------------------------
+
+  byte data[3];
+  //myBytes[0] = (myInt >> 8);
+  //myBytes[1] = myInt;
+  data[0] = roll_sign;
+  data[1] = roll_send;
+  
+  data[2] = pitch_sign;
+  data[3] = pitch_send;
+  
+  data[4] = heading_sign;
+  data[5] = heading_send;
+
+  Serial.print(String(data[0]));
+  Serial.print(String(data[1]));
+  Serial.print(String(data[2]));
+  Serial.print(String(data[3]));
+  Serial.print(String(data[4]));
+  Serial.print(String(data[5]));
+}
+
+
 void loop() {
   float ax, ay, az;
   float gx, gy, gz;
   float mx, my, mz;
-  float roll, pitch, heading;
+  int roll, pitch, heading;
   
   if (IMU.accelerationAvailable()) {
     
@@ -115,9 +180,8 @@ void loop() {
     Serial.print(heading);
     Serial.println();
 
-    String data = String(roll) + "," + String(pitch) + "," +  String(heading);
-    
-    Serial.println(data);    
+    index_helper(roll, pitch, heading);
+    Serial.println();
     
     time1 = time2;
     samplecount++;
