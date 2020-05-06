@@ -91,7 +91,7 @@ void index_helper(int roll, int pitch, int heading) {
 
 //-----------------------------------------
 
-  byte data[3];
+  byte data[6];
   //myBytes[0] = (myInt >> 8);
   //myBytes[1] = myInt;
   data[0] = roll_sign;
@@ -103,12 +103,14 @@ void index_helper(int roll, int pitch, int heading) {
   data[4] = heading_sign;
   data[5] = heading_send;
 
-  Serial.print(String(data[0]));
-  Serial.print(String(data[1]));
-  Serial.print(String(data[2]));
-  Serial.print(String(data[3]));
-  Serial.print(String(data[4]));
-  Serial.print(String(data[5]));
+  Serial.write(data, 6);
+
+  //Serial.print(String(data[0]));
+  //Serial.print(String(data[1]));
+  //Serial.print(String(data[2]));
+  //Serial.print(String(data[3]));
+  //Serial.print(String(data[4]));
+  //Serial.print(String(data[5]));
 }
 
 
@@ -123,7 +125,7 @@ void loop() {
     IMU.readAcceleration(ax, ay, az);
     IMU.readGyroscope(gx, gy, gz);
     IMU.readMagneticField(mx, my, mz);
-    Serial.println("sensors successfully read...");
+    //Serial.println("sensors successfully read...");
 
      // Update the Madgwick filter
     filter.updateIMU(gx, gy, gz, ax, ay, az);
@@ -135,12 +137,12 @@ void loop() {
       time2 = 0;
       roll = 0;
       setuptime = millis();
-      Serial.print('\n');
-      Serial.print("time1: ");
-      Serial.println(time1);
-      Serial.print("time2: ");
-      Serial.print(time2);
-      Serial.print('\n');
+      //Serial.print('\n');
+      //Serial.print("time1: ");
+      //Serial.println(time1);
+      //Serial.print("time2: ");
+      //Serial.print(time2);
+      //Serial.print('\n');
       
     }
     else if (samplecount == 1){
@@ -170,18 +172,18 @@ void loop() {
     pitch = filter.getPitch();
     heading = filter.getYaw(); 
 
-    Serial.print('\t');
-    Serial.print('\t');
-    Serial.print("roll, pitch, heading: ");
-    Serial.print(roll);
-    Serial.print('\t');
-    Serial.print(pitch);
-    Serial.print('\t');
-    Serial.print(heading);
-    Serial.println();
+    //Serial.print('\t');
+    //Serial.print('\t');
+    //Serial.print("roll, pitch, heading: ");
+    //Serial.print(roll);
+    //Serial.print('\t');
+    //Serial.print(pitch);
+    //Serial.print('\t');
+    //Serial.print(heading);
+    //Serial.println();
 
     index_helper(roll, pitch, heading);
-    Serial.println();
+    ///Serial.println();
     
     time1 = time2;
     samplecount++;
